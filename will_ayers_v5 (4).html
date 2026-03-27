@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Will Ayers</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Serif:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#080a08;
+  --bg2:#0d100d;
+  --surface:#111411;
+  --surface2:#161916;
+  --border:rgba(245,166,35,0.18);
+  --border-dim:rgba(245,166,35,0.08);
+  --gold:#F5A623;
+  --gold-dim:rgba(245,166,35,0.12);
+  --gold-glow:rgba(245,166,35,0.2);
+  --gold-bright:#FFB84D;
+  --green:#4CAF50;
+  --green-dim:rgba(76,175,80,0.15);
+  --red:#E53935;
+  --text:#D4C9A8;
+  --text-bright:#EDE0C0;
+  --muted:rgba(212,201,168,0.45);
+  --muted2:rgba(212,201,168,0.25);
+  --font-mono:'IBM Plex Mono',monospace;
+  --font-sans:'IBM Plex Sans',sans-serif;
+  --font-serif:'IBM Plex Serif',serif;
+}
+
+html{scroll-behavior:smooth;font-size:112%;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font-mono);
+  overflow-x:hidden;
+  cursor:default;
+}
+
+/* SCANLINE OVERLAY */
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background:repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.03) 2px,
+    rgba(0,0,0,0.03) 4px
+  );
+  pointer-events:none;z-index:9999;
+}
+
+/* GRID BG */
+.grid-bg{
+  position:fixed;inset:0;
+  background-image:
+    linear-gradient(rgba(245,166,35,0.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(245,166,35,0.03) 1px,transparent 1px);
+  background-size:40px 40px;
+  pointer-events:none;z-index:0;
+}
+
+/* NAV */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:200;
+  display:flex;justify-content:space-between;align-items:center;
+  padding:0 2.5rem;height:48px;
+  background:rgba(8,10,8,0.95);
+  border-bottom:1px solid var(--border);
+  backdrop-filter:blur(8px);
+}
+.nav-left{display:flex;align-items:center;gap:1.5rem;}
+.nav-id{
+  font-family:var(--font-mono);font-size:0.78rem;font-weight:700;
+  color:var(--bg);background:var(--gold);
+  padding:2px 8px;letter-spacing:0.05em;
+}
+.nav-title{
+  font-size:0.7rem;color:var(--muted);letter-spacing:0.12em;
+  text-transform:uppercase;
+}
+.nav-links{display:flex;gap:0;align-items:stretch;}
+.nav-links a{
+  color:var(--muted);text-decoration:none;font-size:0.68rem;
+  font-weight:500;letter-spacing:0.1em;text-transform:uppercase;
+  padding:0 1.2rem;display:flex;align-items:center;
+  border-left:1px solid var(--border-dim);
+  transition:color 0.15s,background 0.15s;
+}
+.nav-links a:hover{color:var(--gold);background:var(--gold-dim);}
+.nav-time{
+  font-size:0.68rem;color:var(--gold);letter-spacing:0.08em;
+  border-left:1px solid var(--border-dim);padding-left:1.2rem;
+}
+
+/* TICKER BAR */
+.ticker-bar{
+  position:relative;overflow:hidden;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  border-top:1px solid var(--border-dim);
+  height:32px;display:flex;align-items:center;
+}
+.ticker-track{
+  display:flex;white-space:nowrap;
+  animation:tickerScroll 40s linear infinite;
+}
+.ticker-item{
+  display:inline-flex;align-items:center;gap:0.6rem;
+  padding:0 2rem;font-size:0.68rem;letter-spacing:0.06em;
+  border-right:1px solid var(--border-dim);
+}
+.ticker-sym{color:var(--gold);font-weight:700;}
+.ticker-val{color:var(--text-bright);}
+.ticker-chg.up{color:var(--green);}
+.ticker-chg.dn{color:var(--red);}
+@keyframes tickerScroll{
+  0%{transform:translateX(0);}
+  100%{transform:translateX(-50%);}
+}
+
+/* SECTION WRAPPER for sticky scroll */
+.sticky-wrapper{
+  display:flex;flex-direction:column;
+}
+.sticky-section{
+  position:relative;
+  min-height:100vh;
+}
+
+/* HERO */
+.hero{
+  min-height:100vh;
+  display:flex;align-items:center;
+  padding:80px 2.5rem 3rem;
+  position:relative;overflow:hidden;
+}
+.hero-panel{
+  display:grid;
+  grid-template-columns:1fr 320px;
+  gap:3rem;
+  max-width:1100px;
+  width:100%;
+  position:relative;z-index:2;
+}
+.hero-tag{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:0.68rem;color:var(--gold);letter-spacing:0.14em;
+  text-transform:uppercase;margin-bottom:1.5rem;
+}
+.hero-tag::before{
+  content:'>';color:var(--gold);
+}
+.hero-label{
+  font-size:0.65rem;color:var(--muted);letter-spacing:0.14em;
+  text-transform:uppercase;margin-bottom:0.4rem;
+}
+h1{
+  font-family:var(--font-mono);
+  font-size:clamp(2.6rem,5.5vw,4.5rem);
+  font-weight:700;line-height:1.05;letter-spacing:-0.02em;
+  color:var(--text-bright);
+  margin-bottom:0.4rem;
+  opacity:0;animation:fadeUp 0.6s ease 0.2s forwards;
+}
+.name-gold{color:var(--gold);}
+.hero-role{
+  font-size:0.78rem;color:var(--muted);letter-spacing:0.06em;
+  margin-bottom:1.8rem;
+  opacity:0;animation:fadeUp 0.6s ease 0.35s forwards;
+}
+.hero-sub{
+  font-family:var(--font-sans);
+  font-size:0.9rem;color:rgba(212,201,168,0.7);
+  line-height:1.8;max-width:520px;
+  margin-bottom:2rem;
+  opacity:0;animation:fadeUp 0.6s ease 0.45s forwards;
+}
+.hero-ctas{
+  display:flex;gap:0.75rem;flex-wrap:wrap;
+  opacity:0;animation:fadeUp 0.6s ease 0.55s forwards;
+}
+.btn-primary{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--gold);color:var(--bg);
+  border:none;padding:0.6rem 1.3rem;
+  font-family:var(--font-mono);font-size:0.72rem;font-weight:700;
+  letter-spacing:0.08em;text-transform:uppercase;
+  cursor:pointer;transition:background 0.15s,transform 0.15s;
+  text-decoration:none;
+}
+.btn-primary:hover{background:var(--gold-bright);transform:translateY(-1px);}
+.btn-outline{
+  display:inline-flex;align-items:center;gap:8px;
+  background:transparent;color:var(--text);
+  border:1px solid var(--border);padding:0.6rem 1.3rem;
+  font-family:var(--font-mono);font-size:0.72rem;font-weight:500;
+  letter-spacing:0.08em;text-transform:uppercase;
+  cursor:pointer;transition:border-color 0.15s,color 0.15s;
+  text-decoration:none;
+}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold);}
+
+/* HERO RIGHT PANEL */
+.hero-data-panel{
+  background:var(--surface);
+  border:1px solid var(--border);
+  padding:1.2rem;
+  display:flex;flex-direction:column;gap:0;
+  opacity:0;animation:fadeIn 0.8s ease 0.5s forwards;
+  align-self:center;
+}
+.data-panel-header{
+  font-size:0.62rem;color:var(--gold);letter-spacing:0.14em;
+  text-transform:uppercase;padding-bottom:0.8rem;
+  border-bottom:1px solid var(--border-dim);
+  margin-bottom:0.8rem;
+}
+.data-row{
+  display:flex;justify-content:space-between;align-items:baseline;
+  padding:0.45rem 0;
+  border-bottom:1px solid var(--border-dim);
+  font-size:0.72rem;
+}
+.data-row:last-child{border-bottom:none;}
+.data-key{color:var(--muted);letter-spacing:0.04em;}
+.data-val{color:var(--text-bright);font-weight:600;}
+.data-val.gold{color:var(--gold);}
+.data-val.green{color:var(--green);}
+.data-status{
+  display:flex;align-items:center;gap:6px;
+  margin-top:1rem;padding-top:0.8rem;
+  border-top:1px solid var(--border);
+  font-size:0.62rem;color:var(--muted);letter-spacing:0.08em;
+}
+.status-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--green);
+  box-shadow:0 0 6px var(--green);
+  animation:blink 2s ease infinite;
+}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0.4;}}
+
+/* SHARED SECTION STYLES */
+section.content-section{
+  padding:5rem 2.5rem;
+  border-top:1px solid var(--border-dim);
+  position:relative;z-index:1;
+}
+.s-header{
+  display:flex;align-items:baseline;gap:1rem;
+  margin-bottom:3rem;
+}
+.s-code{
+  font-size:0.62rem;color:var(--muted2);
+  letter-spacing:0.1em;
+}
+.s-label{
+  font-size:0.62rem;font-weight:600;letter-spacing:0.16em;
+  text-transform:uppercase;color:var(--gold);
+}
+.s-title{
+  font-family:var(--font-mono);font-size:clamp(1.5rem,3vw,2.2rem);
+  font-weight:700;letter-spacing:-0.02em;color:var(--text-bright);
+  margin-bottom:0.3rem;
+}
+
+/* ABOUT */
+.about-grid{
+  display:grid;grid-template-columns:200px 1fr;
+  gap:3.5rem;max-width:900px;
+}
+.avatar-block{display:flex;flex-direction:column;gap:0;}
+.avatar{
+  width:100%;aspect-ratio:1;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-mono);font-size:3rem;font-weight:700;
+  color:var(--gold);
+  margin-bottom:0;
+  position:relative;overflow:hidden;
+}
+.avatar::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,var(--gold-dim),transparent);
+}
+.avatar-label{
+  background:var(--surface2);border:1px solid var(--border);
+  border-top:none;padding:0.5rem 0.75rem;
+  font-size:0.62rem;color:var(--muted);letter-spacing:0.1em;
+}
+.stat-block{
+  display:grid;grid-template-columns:1fr 1fr;gap:1px;
+  border:1px solid var(--border);background:var(--border);
+  align-self:center;
+}
+.stat-cell{
+  background:var(--surface);
+  padding:0.7rem 0.6rem;
+}
+.stat-num{
+  font-family:var(--font-mono);font-size:1.1rem;font-weight:700;
+  color:var(--gold);
+}
+.stat-lbl{font-size:0.58rem;color:var(--muted);margin-top:2px;letter-spacing:0.06em;text-transform:uppercase;}
+
+.bio-text{
+  font-family:var(--font-sans);font-size:0.9rem;
+  color:rgba(212,201,168,0.75);line-height:1.85;
+  margin-bottom:0.9rem;
+}
+.pills{display:flex;flex-wrap:wrap;gap:0.35rem;margin-top:1.2rem;}
+.pill{
+  background:transparent;border:1px solid var(--border);
+  color:var(--muted);font-size:0.65rem;
+  padding:3px 10px;letter-spacing:0.06em;
+  font-family:var(--font-mono);
+  transition:border-color 0.15s,color 0.15s;
+}
+.pill:hover{border-color:var(--gold);color:var(--gold);}
+
+/* NOW */
+.now-grid{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:1px;background:var(--border-dim);
+  border:1px solid var(--border);
+  max-width:700px;margin-bottom:1.5rem;
+}
+.now-cell{
+  background:var(--surface);padding:1.2rem 1.3rem;
+}
+.now-cell-label{
+  font-size:0.6rem;color:var(--gold);letter-spacing:0.14em;
+  text-transform:uppercase;margin-bottom:0.5rem;
+}
+.now-cell-val{
+  font-family:var(--font-sans);font-size:0.88rem;color:var(--text-bright);
+  line-height:1.5;
+}
+.now-cell-sub{
+  font-size:0.75rem;color:var(--muted);margin-top:0.2rem;
+}
+.now-note{
+  font-family:var(--font-sans);
+  font-size:0.83rem;color:var(--muted);line-height:1.75;
+  border-left:2px solid var(--gold);padding-left:1rem;
+  max-width:620px;
+}
+
+/* EXPERIENCE */
+.exp-list{display:flex;flex-direction:column;gap:0;max-width:860px;}
+.exp-item{
+  display:grid;grid-template-columns:130px 1fr;gap:2rem;
+  padding:1.8rem 0;
+  border-bottom:1px solid var(--border-dim);
+}
+.exp-item:first-child{border-top:1px solid var(--border-dim);}
+.exp-meta{padding-top:3px;}
+.exp-year{font-size:0.65rem;color:var(--muted);letter-spacing:0.08em;margin-bottom:0.4rem;}
+.exp-badge{
+  display:inline-block;
+  font-size:0.58rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;
+  padding:2px 7px;border:1px solid var(--border);
+  color:var(--muted);
+}
+.exp-badge.incoming{border-color:var(--gold);color:var(--gold);}
+.exp-role{
+  font-family:var(--font-mono);font-size:1rem;font-weight:600;
+  color:var(--text-bright);margin-bottom:0.2rem;letter-spacing:-0.01em;
+}
+.exp-co{
+  font-size:0.72rem;color:var(--gold);letter-spacing:0.04em;
+  margin-bottom:0.9rem;
+}
+.exp-bullets{list-style:none;display:flex;flex-direction:column;gap:0.5rem;}
+.exp-bullets li{
+  font-family:var(--font-sans);font-size:0.85rem;
+  color:rgba(212,201,168,0.72);line-height:1.75;
+  padding-left:1.2rem;position:relative;
+}
+.exp-bullets li::before{
+  content:'//';position:absolute;left:0;
+  color:var(--gold);font-size:0.7rem;font-family:var(--font-mono);
+}
+
+/* ACTIVITIES */
+.act-list{display:flex;flex-direction:column;gap:0;max-width:860px;}
+.act-item{
+  display:grid;grid-template-columns:130px 1fr;gap:2rem;
+  padding:1.5rem 0;
+  border-bottom:1px solid var(--border-dim);
+}
+.act-item:first-child{border-top:1px solid var(--border-dim);}
+.act-meta-year{font-size:0.65rem;color:var(--muted);letter-spacing:0.06em;margin-bottom:0.4rem;}
+.act-badge{
+  font-size:0.58rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;
+  padding:2px 7px;border:1px solid var(--border);color:var(--muted);
+  display:inline-block;
+}
+.act-title{
+  font-family:var(--font-mono);font-size:0.95rem;font-weight:600;
+  color:var(--text-bright);margin-bottom:0.2rem;
+}
+.act-role{font-size:0.7rem;color:var(--gold);letter-spacing:0.04em;margin-bottom:0.6rem;}
+.act-desc{
+  font-family:var(--font-sans);font-size:0.85rem;
+  color:rgba(212,201,168,0.7);line-height:1.75;
+}
+
+/* CONTACT */
+.contact-inner{max-width:600px;}
+.contact-sub{
+  font-family:var(--font-sans);font-size:0.9rem;
+  color:var(--muted);line-height:1.75;margin-bottom:2rem;
+}
+.contact-links{display:flex;gap:0;flex-wrap:wrap;border:1px solid var(--border);}
+.clink{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:0.9rem 1.4rem;
+  font-family:var(--font-mono);font-size:0.72rem;font-weight:500;
+  letter-spacing:0.1em;text-transform:uppercase;
+  color:var(--text);text-decoration:none;
+  border-right:1px solid var(--border-dim);
+  transition:background 0.15s,color 0.15s;
+}
+.clink:last-child{border-right:none;}
+.clink:hover{background:var(--gold-dim);color:var(--gold);}
+.clink::before{content:'→ ';color:var(--gold);font-size:0.65rem;}
+
+/* FOOTER */
+footer{
+  padding:1.5rem 2.5rem;
+  border-top:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:center;
+  background:var(--surface);
+}
+.footer-id{font-size:0.68rem;color:var(--gold);font-weight:700;letter-spacing:0.08em;}
+.footer-copy{font-size:0.62rem;color:var(--muted2);letter-spacing:0.08em;}
+
+/* STICKY SCROLL */
+.sticky-container{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  min-height:100vh;
+  border-top:1px solid var(--border-dim);
+}
+.sticky-left{
+  position:sticky;top:48px;
+  height:calc(100vh - 48px);
+  display:flex;flex-direction:column;justify-content:center;
+  padding:3rem 2.5rem;
+  border-right:1px solid var(--border-dim);
+  background:var(--bg);
+}
+.sticky-right{
+  padding:3rem 2.5rem;
+  display:flex;flex-direction:column;
+  gap:0;
+}
+.sticky-section-label{
+  font-size:0.6rem;color:var(--gold);letter-spacing:0.16em;
+  text-transform:uppercase;margin-bottom:0.5rem;
+}
+.sticky-section-title{
+  font-family:var(--font-mono);font-size:clamp(1.8rem,3.5vw,2.8rem);
+  font-weight:700;letter-spacing:-0.02em;color:var(--text-bright);
+  margin-bottom:1rem;line-height:1.1;
+}
+.sticky-section-desc{
+  font-family:var(--font-sans);font-size:0.88rem;
+  color:var(--muted);line-height:1.8;
+}
+.sticky-counter{
+  margin-top:2rem;
+  font-size:0.62rem;color:var(--muted2);letter-spacing:0.1em;
+}
+
+/* ANIMATIONS */
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(16px);}
+  to{opacity:1;transform:translateY(0);}
+}
+@keyframes fadeIn{
+  from{opacity:0;}
+  to{opacity:1;}
+}
+
+.reveal{
+  opacity:0;transform:translateY(14px);
+  transition:opacity 0.5s ease, transform 0.5s ease;
+}
+.reveal.visible{opacity:1;transform:translateY(0);}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:0;}
+::-webkit-scrollbar-thumb:hover{background:var(--gold);}
+
+/* RESPONSIVE */
+@media(max-width:800px){
+  .hero-panel{grid-template-columns:1fr;}
+  .hero-data-panel{display:none;}
+  .about-grid{grid-template-columns:1fr;}
+  .sticky-container{grid-template-columns:1fr;}
+  .sticky-left{position:relative;height:auto;top:auto;}
+  nav{padding:0 1rem;}
+  .nav-links a{padding:0 0.8rem;}
+  section.content-section{padding:3.5rem 1.2rem;}
+}
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-left">
+    <div class="nav-id">WA</div>
+    <div class="nav-title">Will Ayers // Portfolio</div>
+  </div>
+  <div class="nav-links">
+    <a href="#about">About</a>
+    <a href="#experience">Experience</a>
+    <a href="#activities">Activities</a>
+    <a href="#contact">Contact</a>
+  </div>
+  <div class="nav-time" id="navTime"></div>
+</nav>
+
+<!-- TICKER -->
+<div style="margin-top:48px;" class="ticker-bar">
+  <div class="ticker-track" id="tickerTrack">
+    <span class="ticker-item"><span class="ticker-sym">ROLE.NXT</span><span class="ticker-val">Alexander Group</span><span class="ticker-chg up">▲ SUM26</span></span>
+    <span class="ticker-item"><span class="ticker-sym">GPA</span><span class="ticker-val">3.71</span><span class="ticker-chg up">▲ UMICH</span></span>
+    <span class="ticker-item"><span class="ticker-sym">LOC</span><span class="ticker-val">Sydney, AU</span><span class="ticker-chg">◆ CURRENT</span></span>
+    <span class="ticker-item"><span class="ticker-sym">MAJOR</span><span class="ticker-val">Economics</span><span class="ticker-chg">◆ B.S.</span></span>
+    <span class="ticker-item"><span class="ticker-sym">MINOR</span><span class="ticker-val">Business</span><span class="ticker-chg">◆ ROSS</span></span>
+    <span class="ticker-item"><span class="ticker-sym">PCKLBALL</span><span class="ticker-val">4.0</span><span class="ticker-chg up">▲ RATING</span></span>
+    <span class="ticker-item"><span class="ticker-sym">PSE</span><span class="ticker-val">Pi Sigma Epsilon</span><span class="ticker-chg">◆ MEMBER</span></span>
+    <span class="ticker-item"><span class="ticker-sym">CP.MGMT</span><span class="ticker-val">$1.5B</span><span class="ticker-chg up">▲ DAILY</span></span>
+    <!-- duplicate for seamless loop -->
+    <span class="ticker-item"><span class="ticker-sym">ROLE.NXT</span><span class="ticker-val">Alexander Group</span><span class="ticker-chg up">▲ SUM26</span></span>
+    <span class="ticker-item"><span class="ticker-sym">GPA</span><span class="ticker-val">3.71</span><span class="ticker-chg up">▲ UMICH</span></span>
+    <span class="ticker-item"><span class="ticker-sym">LOC</span><span class="ticker-val">Sydney, AU</span><span class="ticker-chg">◆ CURRENT</span></span>
+    <span class="ticker-item"><span class="ticker-sym">MAJOR</span><span class="ticker-val">Economics</span><span class="ticker-chg">◆ B.S.</span></span>
+    <span class="ticker-item"><span class="ticker-sym">MINOR</span><span class="ticker-val">Business</span><span class="ticker-chg">◆ ROSS</span></span>
+    <span class="ticker-item"><span class="ticker-sym">PCKLBALL</span><span class="ticker-val">4.0</span><span class="ticker-chg up">▲ RATING</span></span>
+    <span class="ticker-item"><span class="ticker-sym">PSE</span><span class="ticker-val">Pi Sigma Epsilon</span><span class="ticker-chg">◆ MEMBER</span></span>
+    <span class="ticker-item"><span class="ticker-sym">CP.MGMT</span><span class="ticker-val">$1.5B</span><span class="ticker-chg up">▲ DAILY</span></span>
+  </div>
+</div>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-panel">
+    <div>
+      <div class="hero-tag reveal" style="animation-delay:0.1s">Incoming — Alexander Group Chicago · Summer 2026</div>
+      <div class="hero-label reveal" style="animation-delay:0.15s">AYERS, W // EQUITY</div>
+      <h1>Hi, I'm<br><span class="name-gold">Will Ayers.</span></h1>
+      <p class="hero-role reveal" style="animation-delay:0.4s">Economics · University of Michigan · Class of 2027</p>
+      <p class="hero-sub reveal" style="animation-delay:0.5s">Economics student at UofM with a Minor in Business through Ross. Former treasury intern at Guggenheim Partners. Interested in markets, governance, and how data drives decisions.</p>
+      <div class="hero-ctas reveal" style="animation-delay:0.6s">
+        <a class="btn-primary" href="#experience">View Experience</a>
+        <a class="btn-outline" href="mailto:wayers@umich.edu">Get in Touch</a>
+
+      </div>
+    </div>
+    <div class="hero-data-panel">
+      <div class="data-panel-header">AYERS, W &lt;GO&gt; — PROFILE</div>
+      <div class="data-row">
+        <span class="data-key">INSTITUTION</span>
+        <span class="data-val">Univ. of Michigan</span>
+      </div>
+      <div class="data-row">
+        <span class="data-key">DEGREE</span>
+        <span class="data-val">B.S. Economics</span>
+      </div>
+      <div class="data-row">
+        <span class="data-key">GPA</span>
+        <span class="data-val gold">3.71</span>
+      </div>
+      <div class="data-row">
+        <span class="data-key">GRAD</span>
+        <span class="data-val">May 2027</span>
+      </div>
+      <div class="data-row">
+        <span class="data-key">LAST ROLE</span>
+        <span class="data-val">Guggenheim</span>
+      </div>
+      <div class="data-row">
+        <span class="data-key">NEXT ROLE</span>
+        <span class="data-val gold">Alexander Group</span>
+      </div>
+      <div class="data-row">
+        <span class="data-key">CP MANAGED</span>
+        <span class="data-val green">$1.5B / day</span>
+      </div>
+      <div class="data-row">
+        <span class="data-key">LOCATION</span>
+        <span class="data-val">Sydney, AU</span>
+      </div>
+      <div class="data-status">
+        <div class="status-dot"></div>
+        AVAILABLE · OPEN TO CONNECT
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT — sticky scroll layout -->
+<div class="sticky-container" id="about">
+  <div class="sticky-left">
+    <div class="sticky-section-label reveal">01 // About</div>
+    <div class="sticky-section-title reveal">About Me.</div>
+    <div class="sticky-section-desc reveal">A junior at UofM building a career at the intersection of finance, data, and strategy.</div>
+    <div class="sticky-counter reveal">scroll to explore ↓</div>
+  </div>
+  <div class="sticky-right">
+    <div style="padding:3rem 0 2.5rem;border-bottom:1px solid var(--border-dim);">
+      <div class="reveal" style="display:flex;align-items:flex-start;gap:1.2rem;margin-bottom:1.5rem;">
+        <div style="flex-shrink:0;">
+          <div class="avatar" style="width:100px;height:100px;font-size:2rem;">WA</div>
+          <div class="avatar-label">AYERS, WILL // UofM</div>
+        </div>
+        <div class="stat-block" style="flex:1;margin-top:0;">
+          <div class="stat-cell"><div class="stat-num">3.71</div><div class="stat-lbl">GPA</div></div>
+          <div class="stat-cell"><div class="stat-num">2027</div><div class="stat-lbl">Grad Year</div></div>
+        </div>
+      </div>
+      <p class="bio-text reveal">I'm a junior at UofM studying Economics with a Minor in Business through Ross. My coursework — game theory, macroeconomics, accounting, data science — fed directly into my work at Guggenheim Partners, where I sat on the treasury desk managing over a billion in daily commercial paper.</p>
+      <p class="bio-text reveal">I care about how systems work: financial markets, blockchain protocols, organizations. Outside of class I race sailboats competitively, dig into DeFi governance, and am almost definitely playing a LinkedIn daily puzzle.</p>
+      <div class="pills reveal">
+        <span class="pill">Bloomberg Terminal</span>
+        <span class="pill">Python</span>
+        <span class="pill">Financial Modeling</span>
+        <span class="pill">Econometrics</span>
+        <span class="pill">Game Theory</span>
+        <span class="pill">DeFi / Web3</span>
+        <span class="pill">Excel</span>
+        <span class="pill">Macro Analysis</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NOW — sticky scroll -->
+<div class="sticky-container" id="now">
+  <div class="sticky-left">
+    <div class="sticky-section-label reveal">02 // Now</div>
+    <div class="sticky-section-title reveal">What I'm<br>Up To.</div>
+    <div class="sticky-section-desc reveal">This page is a living document — updated as things change.</div>
+    <div class="sticky-counter reveal">Last updated March 2026</div>
+  </div>
+  <div class="sticky-right">
+    <div style="padding:3rem 0;">
+      <div class="now-grid reveal">
+        <div class="now-cell">
+          <div class="now-cell-label">Location</div>
+          <div class="now-cell-val">Sydney, Australia</div>
+          <div class="now-cell-sub">Working and exploring — based here through early 2026</div>
+        </div>
+        <div class="now-cell">
+          <div class="now-cell-label">Building</div>
+          <div class="now-cell-val">Personal App</div>
+          <div class="now-cell-sub">Currently in early development — more soon</div>
+        </div>
+        <div class="now-cell">
+          <div class="now-cell-label">Reading</div>
+          <div class="now-cell-val">Markets & Macro</div>
+          <div class="now-cell-sub">Following Fed policy, DeFi governance, and macro trends</div>
+        </div>
+        <div class="now-cell">
+          <div class="now-cell-label">Next Move</div>
+          <div class="now-cell-val">Chicago, IL</div>
+          <div class="now-cell-sub">Alexander Group · Summer 2026 Strategy Consulting</div>
+        </div>
+      </div>
+      <p class="now-note reveal" style="margin-top:1.5rem;">New projects, new places, new ideas. This section evolves with me — check back when things change.</p>
+    </div>
+  </div>
+</div>
+
+<!-- EXPERIENCE — sticky scroll -->
+<div class="sticky-container" id="experience">
+  <div class="sticky-left">
+    <div class="sticky-section-label reveal">03 // Career</div>
+    <div class="sticky-section-title reveal">Experience.</div>
+    <div class="sticky-section-desc reveal">Finance, strategy, and markets — hands-on experience from the treasury desk to consulting.</div>
+  </div>
+  <div class="sticky-right">
+    <div style="padding:3rem 0;">
+
+      <div class="exp-item reveal">
+        <div class="exp-meta">
+          <div class="exp-year">Summer 2026</div>
+          <div class="exp-badge incoming">Incoming</div>
+        </div>
+        <div>
+          <div class="exp-role">Strategy Consultant</div>
+          <div class="exp-co">Alexander Group Inc. — Chicago, IL</div>
+          <ul class="exp-bullets">
+            <li>Joining AGI's Chicago office as a summer consultant focused on go-to-market and revenue strategy engagements for B2B clients.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="exp-item reveal">
+        <div class="exp-meta">
+          <div class="exp-year">Summer 2025</div>
+          <div class="exp-badge">Finance</div>
+        </div>
+        <div>
+          <div class="exp-role">Treasury Intern</div>
+          <div class="exp-co">Guggenheim Partners — Chicago, IL</div>
+          <ul class="exp-bullets">
+            <li>Executed and monitored ~$1.5B in daily commercial paper issuance across floating, callable, and fixed-rate structures; coordinated directly with dealers and used Bloomberg Terminal to track funding levels and market liquidity.</li>
+            <li>Analyzed financial statements to produce daily cash flow reports; incorporated Fed policy and macro indicators into rate setting and term sheet distribution.</li>
+            <li>Collaborated with quant teams on Python-based financial modeling; reconciled trade exposures with compliance.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="exp-item reveal">
+        <div class="exp-meta">
+          <div class="exp-year">2019–2024</div>
+          <div class="exp-badge">Ops</div>
+        </div>
+        <div>
+          <div class="exp-role">Director of Sailing Operations</div>
+          <div class="exp-co">Saugatuck Yacht Club — Saugatuck, MI</div>
+          <ul class="exp-bullets">
+            <li>Managed payroll, scheduling for 15+ employees, and 50+ boat inventory. Led hiring and cultivated relationships with six Yacht Clubs across West Michigan.</li>
+            <li>Supervised and coached twice-daily summer camp with 150+ sailors per season, developing curriculum and training instructors.</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ACTIVITIES — sticky scroll -->
+<div class="sticky-container" id="activities">
+  <div class="sticky-left">
+    <div class="sticky-section-label reveal">04 // Campus</div>
+    <div class="sticky-section-title reveal">Activities &amp;<br>Involvement.</div>
+    <div class="sticky-section-desc reveal">Leadership, research, and competition — on and off the water.</div>
+  </div>
+  <div class="sticky-right">
+    <div style="padding:3rem 0;">
+
+      <div class="act-item reveal">
+        <div>
+          <div class="act-meta-year">2024 – Present</div>
+          <div class="act-badge">Leadership</div>
+        </div>
+        <div>
+          <div class="act-title">Pi Sigma Epsilon</div>
+          <div class="act-role">VP of Human Resources</div>
+          <div class="act-desc">Led recruitment for 300+ applicants across five events. Organized professional development workshops in consulting, finance, and tech, and facilitated networking for 100+ members.</div>
+        </div>
+      </div>
+
+      <div class="act-item reveal">
+        <div>
+          <div class="act-meta-year">2025 – Present</div>
+          <div class="act-badge">Research</div>
+        </div>
+        <div>
+          <div class="act-title">Michigan Blockchain</div>
+          <div class="act-role">Consulting Team Analyst</div>
+          <div class="act-desc">Researches governance proposals for Uniswap, Aave, and Compound, influencing decisions across $30M+ in protocol delegations. Analyzes small-cap tokens, market trends, and Web3 business strategies.</div>
+        </div>
+      </div>
+
+      <div class="act-item reveal">
+        <div>
+          <div class="act-meta-year">2023 – Present</div>
+          <div class="act-badge">Varsity</div>
+        </div>
+        <div>
+          <div class="act-title">UofM Sailing Team</div>
+          <div class="act-role">Varsity Athlete</div>
+          <div class="act-desc">Competes in Big Ten intercollegiate regattas. Won the 2023 Buckeye Invitational against top collegiate programs across the country.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- CONTACT -->
+<section class="content-section" id="contact">
+  <div class="s-header">
+    <div class="s-code">05</div>
+    <div class="s-label">Contact</div>
+  </div>
+  <div class="s-title reveal">Let's Connect.</div>
+  <p class="contact-sub reveal">Always happy to talk markets, economics, or sailing. Reach out anytime.</p>
+  <div class="contact-links reveal">
+    <a class="clink" href="/cdn-cgi/l/email-protection#b4c3d5cdd1c6c7f4c1d9ddd7dc9ad1d0c1"><span class="__cf_email__" data-cfemail="394e58405c4b4a794c54505a51175c5d4c">[email&#160;protected]</span></a>
+    <a class="clink" href="https://www.linkedin.com/in/will-ayers/" target="_blank">LinkedIn</a>
+
+  </div>
+</section>
+
+<footer>
+  <div class="footer-id">AYERS, W // PORTFOLIO // 2026</div>
+  <span class="footer-copy">Built with care · Updated March 2026</span>
+</footer>
+
+<script>
+// Live clock in nav
+function updateTime(){
+  const t=new Date();
+  document.getElementById('navTime').textContent=
+    t.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false})+' EST';
+}
+setInterval(updateTime,1000);updateTime();
+
+// Scroll reveal
+const revealEls=document.querySelectorAll('.reveal');
+const observer=new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target);}
+  });
+},{threshold:0.12,rootMargin:'0px 0px -40px 0px'});
+revealEls.forEach(el=>observer.observe(el));
+
+// Hero reveal elements — trigger immediately
+document.querySelectorAll('.hero .reveal').forEach(el=>{
+  setTimeout(()=>el.classList.add('visible'),100);
+});
+</script>
+</body>
+</html>
